@@ -1,0 +1,3 @@
+PassengerFriendlyErrorPages off
+PassengerPython /home/pacs/{{pac}}/users/{{user}}/lbs/.venv/bin/python
+SetEnv PYTHONPATH /home/pacs/{{pac}}/users/{{user}}/lbs

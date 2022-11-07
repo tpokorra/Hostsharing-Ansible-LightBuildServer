@@ -1,0 +1,145 @@
+---
+- hosts: lightbuildserver
+  become_user: "{{pac}}-{{user}}"
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    # see https://docs.ansible.com/ansible/latest/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+    ansible_common_remote_group: "{{pac}}"
+    ansible_remote_tmp: ~/.ansible/tmp
+
+  tasks:
+  - name: Create user, domain and database
+    import_tasks: tasks/hs_basis.yml
+
+  #################################
+  ## create directories
+  #################################
+  - name: Create bin directory
+    become: yes
+    file:
+      path: "/home/pacs/{{pac}}/users/{{user}}/bin"
+      state: directory
+
+  ##################################
+  ## install LightBuildServer
+  ##################################
+  - name: Check for git working tree
+    become: yes
+    stat:
+      path: /home/pacs/{{pac}}/users/{{user}}/lbs
+    register: workingtree
+  - name: get lightbuildserver repo
+    become: yes
+    git:
+      repo: https://github.com/solidcharity/lightbuildserver.git
+      dest: /home/pacs/{{pac}}/users/{{user}}/lbs
+      version: master
+      depth: 10
+    when: not workingtree.stat.exists
+
+  - name: use older Django because of Python 3.7
+    become: yes
+    replace:
+      path: /home/pacs/{{pac}}/users/{{user}}/lbs/requirements.txt
+      regexp: '^django>=4.1$'
+      replace: 'django==3.2.16'
+
+  #################################
+  # initialise virtual environment
+  #################################
+  - name: We want the venv directory in lbs
+    become: yes
+    lineinfile:
+      path: "/home/pacs/{{pac}}/users/{{user}}/.profile"
+      line: "export PIPENV_VENV_IN_PROJECT=1"
+      create: yes
+      mode: '0755'
+  - name: Run a pipenv install
+    become: yes
+    command: "pipenv install"
+    args:
+      creates: "/home/pacs/{{pac}}/users/{{user}}/lbs/Pipfile.lock"
+      chdir: "/home/pacs/{{pac}}/users/{{user}}/lbs"
+    environment:
+      PIPENV_VENV_IN_PROJECT: 1
+
+  ##################################
+  ## configuration
+  ##################################
+  - name: upload configuration file
+    become: yes
+    template:
+      src: "templates/settings_local.py"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/lbs/lbs/settings_local.py"
+
+  - name: upload sql script
+    become: yes
+    template:
+      src: "templates/sql.sh"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/bin/sql.sh"
+      mode: '0744'
+
+  ######################
+  ## initialise instance
+  ######################
+  - name: initialise instance
+    become: yes
+    shell: |
+      export PIPENV_VENV_IN_PROJECT=1
+      pipenv install psycopg2 || exit -1
+      pipenv run python manage.py migrate || exit -1
+      touch /home/pacs/{{pac}}/users/{{user}}/.ansible_init_instance
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}/lbs"
+      creates: "/home/pacs/{{pac}}/users/{{user}}/.ansible_init_instance"
+
+  - name: create super user
+    become: yes
+    shell: |
+      export PIPENV_VENV_IN_PROJECT=1
+      echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(is_superuser=True).exists() or User.objects.create_superuser('{{admin_name}}', '{{admin_email}}', '{{admin_password}}')" | pipenv run python manage.py shell || exit -1
+      touch /home/pacs/{{pac}}/users/{{user}}/.ansible_init_admin
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}/lbs"
+      creates: "/home/pacs/{{pac}}/users/{{user}}/.ansible_init_admin"
+
+  ########################
+  # configure the website
+  ########################
+  - name: upload passenger_wsgi.py file to app directory
+    become: yes
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/app-ssl/passenger_wsgi.py" src="templates/django.passenger_wsgi.py" mode=0644
+  - name: upload restart script to bin directory
+    become: yes
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/bin" src="templates/restart.sh" mode=0755
+  - name: drop htdocs-ssl/.htaccess
+    become: yes
+    file:
+       path: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/htdocs-ssl/.htaccess"
+       state: absent
+  - name: upload .htaccess file to domain directory
+    become: yes
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/.htaccess" src="templates/django.htaccess" mode=0644
+  - name: drop subs-ssl/www/index.html
+    become: yes
+    file:
+       path: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/subs-ssl/www/index.html"
+       state: absent
+  - name: create symbolic link for static
+    become: yes
+    file:
+      src: "/home/pacs/{{pac}}/users/{{user}}/lbs/.venv/lib/python3.7/site-packages/django/contrib/admin/static"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/htdocs-ssl/static"
+      state: link
+
+  ####################
+  ## install cron job
+  ####################
+  - name: add cronjob for the builds
+    become: yes
+    cron:
+      name: "run the lbs cronjob"
+      minute: "*"
+      job: cd $HOME/lbs && PIPENV_VENV_IN_PROJECT = 1 pipenv run python manage.py cronjob
