@@ -9,6 +9,8 @@ lightbuildserver:
       user: lbs
       password: testpassw0rd_changeme
 
+      django_secret_key: "TODO 50 random characters"
+
       admin_name: my_admin
       admin_email: admin@example.org
       admin_password: TOP_secret
