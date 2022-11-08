@@ -37,13 +37,6 @@
       depth: 10
     when: not workingtree.stat.exists
 
-  - name: use older Django because of Python 3.7
-    become: yes
-    replace:
-      path: /home/pacs/{{pac}}/users/{{user}}/lbs/requirements.txt
-      regexp: '^django>=4.1$'
-      replace: 'django==3.2.16'
-
   #################################
   # initialise virtual environment
   #################################
@@ -142,4 +135,4 @@
     cron:
       name: "run the lbs cronjob"
       minute: "*"
-      job: cd $HOME/lbs && PIPENV_VENV_IN_PROJECT = 1 pipenv run python manage.py cronjob
+      job: cd $HOME/lbs && PIPENV_VENV_IN_PROJECT=1 pipenv run python manage.py cronjob
