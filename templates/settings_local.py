@@ -23,11 +23,11 @@ KEEP_MINIMUM_LOGS = 5
 DISPLAY_MAX_BUILDS_PER_PACKAGE = 15
 MAX_DEBUG_LEVEL = 1
 
-GIT_SRC_PATH = "var/src"
-LOGS_PATH = "var/logs"
-REPOS_PATH = "var/repos"
-TARBALLS_PATH = "var/tarballs"
-SSH_TMP_PATH = "var/ssh"
+GIT_SRC_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/src"
+LOGS_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/logs"
+REPOS_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/repos"
+TARBALLS_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/tarballs"
+SSH_TMP_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/ssh"
 
 PUBLIC_KEY_SERVER = "keyserver.ubuntu.com"
 
