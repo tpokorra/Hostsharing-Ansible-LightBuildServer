@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd ~/weblate
+cd ~/lbs
 . .venv/bin/activate
 python manage.py dbshell
