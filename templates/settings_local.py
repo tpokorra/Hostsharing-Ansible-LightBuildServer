@@ -23,6 +23,9 @@ KEEP_MINIMUM_LOGS = 5
 DISPLAY_MAX_BUILDS_PER_PACKAGE = 15
 MAX_DEBUG_LEVEL = 1
 
+DELETE_PACKAGES_AFTER_DAYS = 4
+KEEP_MINIMUM_PACKAGES = 4
+
 GIT_SRC_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/src"
 LOGS_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/logs"
 REPOS_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/repos"
