@@ -81,6 +81,7 @@
       export PIPENV_VENV_IN_PROJECT=1
       pipenv install psycopg2 || exit -1
       pipenv run python manage.py migrate || exit -1
+      echo "yes" | pipenv run python manage.py collectstatic || exit -1
       touch /home/pacs/{{pac}}/users/{{user}}/.ansible_init_instance
     args:
       executable: /bin/bash
@@ -123,7 +124,7 @@
   - name: create symbolic link for static
     become: yes
     file:
-      src: "/home/pacs/{{pac}}/users/{{user}}/lbs/.venv/lib/python3.7/site-packages/django/contrib/admin/static"
+      src: "/home/pacs/{{pac}}/users/{{user}}/static"
       dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/htdocs-ssl/static"
       state: link
 
