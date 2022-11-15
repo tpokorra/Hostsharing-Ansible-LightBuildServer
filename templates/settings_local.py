@@ -9,7 +9,7 @@ DEBUG = False
 # BuildingTimeout in seconds, will stop the build if no output from build script arrives within that time
 BUILDING_TIMEOUT = 600
 
-SHOW_NUMBER_OF_FINISHED_JOBS = 30
+SHOW_NUMBER_OF_FINISHED_JOBS = 50
 
 EMAIL_FROM_ADDRESS = "build.robot@{{domain}}"
 EMAIL_SERVER = "{{pac}}.hostsharing.net"
