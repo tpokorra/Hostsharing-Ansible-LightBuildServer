@@ -128,6 +128,27 @@
       dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/htdocs-ssl/static"
       state: link
 
+  ################################
+  # configure the download website
+  ################################
+  - name: create download domain
+    hsdomain.js: name="{{download_domain}}" owner="{{pac}}-{{user}}" exists="true"
+  - name: upload .htaccess file to download domain
+    become: yes
+    template: dest="/home/pacs/{{pac}}/users/{{user}}/doms/{{download_domain}}/htdocs-ssl/.htaccess" src="templates/download.htaccess" mode=0644
+  - name: create symbolic link for repos
+    become: yes
+    file:
+      src: "/home/storage/{{pac}}/users/{{user}}/var/repos"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{download_domain}}/htdocs-ssl/repos"
+      state: link
+  - name: create symbolic link for tarballs
+    become: yes
+    file:
+      src: "/home/storage/{{pac}}/users/{{user}}/var/tarballs"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{download_domain}}/htdocs-ssl/tarballs"
+      state: link
+
   ####################
   ## install cron job
   ####################
