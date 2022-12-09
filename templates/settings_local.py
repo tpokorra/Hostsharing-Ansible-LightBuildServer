@@ -32,8 +32,6 @@ REPOS_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/repos"
 TARBALLS_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/tarballs"
 SSH_TMP_PATH = "/home/pacs/{{pac}}/users/{{user}}/var/ssh"
 
-STATIC_ROOT="/home/pacs/{{pac}}/users/{{user}}/static"
-
 PUBLIC_KEY_SERVER = "keyserver.ubuntu.com"
 
 LBS_URL = "https://{{domain}}"

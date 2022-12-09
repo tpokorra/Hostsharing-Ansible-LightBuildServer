@@ -124,7 +124,7 @@
   - name: create symbolic link for static
     become: yes
     file:
-      src: "/home/pacs/{{pac}}/users/{{user}}/static"
+      src: "/home/pacs/{{pac}}/users/{{user}}/lbs/static"
       dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/htdocs-ssl/static"
       state: link
 
