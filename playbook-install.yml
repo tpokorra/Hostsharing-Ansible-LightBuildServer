@@ -157,4 +157,4 @@
     cron:
       name: "run the lbs cronjob"
       minute: "*"
-      job: cd $HOME/lbs && PIPENV_VENV_IN_PROJECT=1 pipenv run python manage.py cronjob
+      job: cd $HOME/lbs && PIPENV_VENV_IN_PROJECT=1 pipenv run python manage.py cronjob >/dev/null 2>&1
